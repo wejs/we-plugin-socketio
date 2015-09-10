@@ -7,9 +7,13 @@
   "dependencies": {
     "socket.io": "1.3.5"
   },
-  "devDependencies": {},
+  "author": "Alberto Souza <alberto.souza.99@gmail.com>",
   "publishConfig": {
     "registry": "http://registry.npmjs.org"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:wejs/we-plugin-socketio.git"
+  }
 }
