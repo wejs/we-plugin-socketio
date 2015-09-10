@@ -1,0 +1,15 @@
+{
+  "name": "we-plugin-socketio",
+  "description": "We.js we-plugin-socketio plugin",
+  "version": "0.3.0",
+  "main": "plugin.js",
+  "scripts": {},
+  "dependencies": {
+    "socket.io": "1.3.5"
+  },
+  "devDependencies": {},
+  "publishConfig": {
+    "registry": "http://registry.npmjs.org"
+  },
+  "license": "MIT"
+}
