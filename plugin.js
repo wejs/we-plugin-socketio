@@ -8,7 +8,31 @@
  * npm module file
  */
 var socketIo = require('socket.io');
-var weIo = {};
+var weIo = {
+  tokenStrategy: function tokenStrategy(token, done) {
+    var we = this.we;
+
+    return we.db.models.accesstoken.find({ where: {
+      token: token, isValid: true
+    }}).then(function (tokenObj) {
+      if (!tokenObj) return done(null, false);
+
+      var accessTokenTime = we.config.passport.accessTokenTime;
+
+      var notIsExpired = we.auth.util.checkIfTokenIsExpired(tokenObj, accessTokenTime);
+      if (!notIsExpired) return done(null, false);
+
+      we.db.models.user.find({
+        where: {id: tokenObj.userId},
+        include: [ { model: we.db.models.role, as: 'roles'} ]
+      }).then(function (user) {
+        if (!user) return done(null, false);
+        // TODO add suport to scopes
+        return done(null, user, { scope: 'all' });
+      });
+    });
+  }
+};
 
 /**
  * Add socket.io in http
@@ -23,7 +47,7 @@ weIo.load = function load(we, server) {
   // socket.io auth middleware
   we.io.use(function (socket, next) {
     if (socket.handshake && socket.handshake.query && socket.handshake.query.authToken) {
-      we.auth.tokenStrategy.bind({we: we})(socket.handshake.query.authToken, function(err, user) {
+      weIo.tokenStrategy.bind({we: we})(socket.handshake.query.authToken, function(err, user) {
         if (err) return next(err);
         if (!user) return next();
 
@@ -54,7 +78,7 @@ weIo.load = function load(we, server) {
       if (!data.authToken) return;
       we.log.verbose('auth:login:token', data);
 
-      we.auth.tokenStrategy.bind({we: we})(data.authToken, function(err, user) {
+      weIo.tokenStrategy.bind({we: we})(data.authToken, function(err, user) {
         if (err) {
           return we.log.error('auth:login:token: we.auth.tokenStrategy:', err);
         }
