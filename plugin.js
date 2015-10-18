@@ -1,17 +1,17 @@
 /**
- * Plugin.js file, set configs, routes, hooks and events here
+ * We.js socket.io plugin
+ *
+ * Add socket.io with suport to sesstion and token authentications
  *
  * see http://wejs.org/docs/we/extend.plugin
  */
 
-/**
- * npm module file
- */
 var socketIo = require('socket.io');
+var sharedsession = require('express-socket.io-session');
+
 var weIo = {
   tokenStrategy: function tokenStrategy(token, done) {
     var we = this.we;
-
     return we.db.models.accesstoken.find({ where: {
       token: token, isValid: true
     }}).then(function (tokenObj) {
@@ -31,6 +31,15 @@ var weIo = {
         return done(null, user, { scope: 'all' });
       });
     });
+  },
+  sessionStrategy: function sessionStrategy(userId, done) {
+    var we = this.we;
+    we.db.models.user.find({
+      where: { id: userId },
+      include: [ { model: we.db.models.role, as: 'roles'} ]
+    }).then(function (user) {
+      done(null, user);
+    });
   }
 };
 
@@ -40,25 +49,50 @@ var weIo = {
 weIo.load = function load(we, server) {
   we.io = socketIo(server);
 
+  we.io.use(sharedsession(we.session, {
+    autoSave: true
+  }));
+
   we.events.emit('we:after:load:socket.io', { we: we, server: server } );
 
   we.io.onlineusers = {};
 
-  // socket.io auth middleware
+  // socket.io authToken middleware
   we.io.use(function (socket, next) {
-    if (socket.handshake && socket.handshake.query && socket.handshake.query.authToken) {
-      weIo.tokenStrategy.bind({we: we})(socket.handshake.query.authToken, function(err, user) {
-        if (err) return next(err);
-        if (!user) return next();
+    if (!socket.handshake.query.authToken) return next();
+    // token strategy
+    weIo.tokenStrategy.bind({we: we})(socket.handshake.query.authToken, function (err, user) {
+      if (err) return next(err);
+      if (!user) return next();
 
-        socket.authToken = socket.handshake.query.authToken;
-        socket.user = user;
+      socket.authToken = socket.handshake.query.authToken;
+      socket.user = user;
 
-        next();
-      });
-    } else {
       next();
+    });
+  });
+  // socket.io session middleware
+  we.io.use(function (socket, next) {
+    if (
+      !we.config.passport.enableSession ||
+      !socket.handshake.session ||
+      !socket.handshake.session.passport ||
+      !socket.handshake.session.passport.user
+    ) {
+      return next();
     }
+
+    var userId = socket.handshake.session.passport.user;
+    // sessinIdStrategy strategy
+    weIo.sessionStrategy.bind({we: we})(userId, function (err, user) {
+      if (err) return next(err);
+      if (!user) return next();
+
+      socket.userId = userId;
+      socket.user = user;
+
+      next();
+    });
   });
 
   we.io.on('connection', function (socket) {
@@ -143,7 +177,6 @@ module.exports = function loadPlugin(projectPath, Plugin) {
   plugin.events.on('we:server:after:create', function (data) {
     weIo.load(data.we, data.server);
   });
-
 
   return plugin;
 };
