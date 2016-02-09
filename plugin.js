@@ -12,8 +12,16 @@ var sharedsession = require('express-socket.io-session');
 module.exports = function loadPlugin(projectPath, Plugin) {
   var plugin = new Plugin(__dirname);
   // set plugin configs
-  // plugin.setConfigs({
-  // });
+  plugin.setConfigs({
+    socketio: {
+      adapter: {
+        // // Socket.io adapter settings, configure in you project and install the related module for enable
+        // // see http://socket.io/docs/using-multiple-nodes/
+        // name: 'socket.io-redis',
+        // options: { host: 'localhost', port: 6379 }
+      }
+    }
+  });
 
   plugin.tokenStrategy = function tokenStrategy(token, done) {
     var we = this.we;
@@ -49,10 +57,36 @@ module.exports = function loadPlugin(projectPath, Plugin) {
   }
 
   /**
+   * Load the socket.io adapter if is configured
+   *
+   * @param  {Object} we
+   */
+  plugin.loadAdapter = function loadAdapter(we) {
+    var adapter;
+
+    if (we.config.socketio.adapter.name) {
+      var name = we.config.socketio.adapter.name;
+      try {
+        adapter = require(name);
+      } catch (e) {
+        we.log.verbose(e);
+        we.log.warn('we-plugin-socketio: socketio adapter module '+name+' not found, try to install it with: ');
+        we.log.warn('npm install '+name);
+
+        return;
+      }
+
+      we.io.adapter(adapter(we.config.socketio.adapter.options));
+    }
+  }
+
+  /**
    * Add socket.io in http
    */
   plugin.load = function load(we, server) {
     we.io = socketIo(server);
+
+    plugin.loadAdapter(we);
 
     we.io.use(sharedsession(we.session, {
       autoSave: true
@@ -174,10 +208,6 @@ module.exports = function loadPlugin(projectPath, Plugin) {
     type: 'plugin', weight: 11, pluginName: 'we-plugin-socketio',
     path: 'files/public/js/we.io.js'
   });
-
-  // plugin.events.on('we:after:load:plugins', function (we) {
-  //   // we.io = { socketio: socketIo, plugin: plugin };
-  // });
 
   plugin.events.on('we:server:after:create', function (data) {
     plugin.load(data.we, data.server);
