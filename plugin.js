@@ -14,6 +14,8 @@ module.exports = function loadPlugin(projectPath, Plugin) {
   // set plugin configs
   plugin.setConfigs({
     socketio: {
+      enablePubSub: true,
+
       adapter: {
         // // Socket.io adapter settings, configure in you project and install the related module for enable
         // // see http://socket.io/docs/using-multiple-nodes/
@@ -138,6 +140,7 @@ module.exports = function loadPlugin(projectPath, Plugin) {
       we.log.verbose('a user connected:', socket.id);
 
       if (socket.user && socket.user.id) {
+        socket.userId = socket.user.id;
         // join user exclusive room to allow others users send
         // mesages to this user
         socket.join('user_' + socket.user.id);
@@ -167,7 +170,7 @@ module.exports = function loadPlugin(projectPath, Plugin) {
       });
 
       socket.on('disconnect', function() {
-        we.log.verbose('user disconnected', socket.id, socket.user);
+        we.log.verbose('user disconnected socketID: ' + socket.id + ' userId: ' + socket.userId);
         we.io.removeFromOnlineUsers(socket);
       });
     });

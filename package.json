@@ -16,5 +16,8 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:wejs/we-plugin-socketio.git"
+  },
+  "devDependencies": {
+    "socket.io-redis": "^1.0.0"
   }
 }
