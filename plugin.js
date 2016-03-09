@@ -64,12 +64,12 @@ module.exports = function loadPlugin(projectPath, Plugin) {
    * @param  {Object} we
    */
   plugin.loadAdapter = function loadAdapter(we) {
-    var adapter;
+    var adapter, adapterModule;
 
     if (we.config.socketio.adapter.name) {
       var name = we.config.socketio.adapter.name;
       try {
-        adapter = require(name);
+        adapterModule = require(name);
       } catch (e) {
         we.log.verbose(e);
         we.log.warn('we-plugin-socketio: socketio adapter module '+name+' not found, try to install it with: ');
@@ -78,7 +78,12 @@ module.exports = function loadPlugin(projectPath, Plugin) {
         return;
       }
 
-      we.io.adapter(adapter(we.config.socketio.adapter.options));
+      adapter = adapterModule(we.config.socketio.adapter.options);
+
+      adapter.pubClient.on('error', we.log.error);
+      adapter.subClient.on('error', we.log.error);
+
+      we.io.adapter(adapter);
     }
   }
 
