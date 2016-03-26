@@ -27,7 +27,7 @@ module.exports = function loadPlugin(projectPath, Plugin) {
 
   plugin.tokenStrategy = function tokenStrategy(token, done) {
     var we = this.we;
-    return we.db.models.accesstoken.find({ where: {
+    return we.db.models.accesstoken.findOne({ where: {
       token: token, isValid: true
     }}).then(function (tokenObj) {
       if (!tokenObj) return done(null, false);
@@ -37,25 +37,23 @@ module.exports = function loadPlugin(projectPath, Plugin) {
       var notIsExpired = we.auth.util.checkIfTokenIsExpired(tokenObj, accessTokenTime);
       if (!notIsExpired) return done(null, false);
 
-      we.db.models.user.find({
-        where: {id: tokenObj.userId},
-        include: [ { model: we.db.models.role, as: 'roles'} ]
+      we.db.models.user.findOne({
+        where: { id: tokenObj.userId }
       }).then(function (user) {
         if (!user) return done(null, false);
         // TODO add suport to scopes
         return done(null, user, { scope: 'all' });
-      });
-    });
+      }).catch(done);
+    }).catch(done);
   }
 
   plugin.sessionStrategy = function sessionStrategy(userId, done) {
     var we = this.we;
-    we.db.models.user.find({
-      where: { id: userId },
-      include: [ { model: we.db.models.role, as: 'roles'} ]
+    we.db.models.user.findOne({
+      where: { id: userId }
     }).then(function (user) {
       done(null, user);
-    });
+    }).catch(done);
   }
 
   /**
