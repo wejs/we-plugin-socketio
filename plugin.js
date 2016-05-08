@@ -7,7 +7,6 @@
  */
 
 var socketIo = require('socket.io');
-var sharedsession = require('express-socket.io-session');
 
 module.exports = function loadPlugin(projectPath, Plugin) {
   var plugin = new Plugin(__dirname);
@@ -92,17 +91,6 @@ module.exports = function loadPlugin(projectPath, Plugin) {
     we.io = socketIo(server);
 
     plugin.loadAdapter(we);
-
-    var sharedsessionMD = sharedsession(we.session, {
-      autoSave: false
-    });
-
-    we.io.use(function (socket, next){
-      sharedsessionMD.bind(this)(socket, function (err){
-        if (err) we.log.error(err, socket);
-        next();
-      });
-    });
 
     we.events.emit('we:after:load:socket.io', { we: we, server: server } );
 
