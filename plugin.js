@@ -93,9 +93,16 @@ module.exports = function loadPlugin(projectPath, Plugin) {
 
     plugin.loadAdapter(we);
 
-    we.io.use(sharedsession(we.session, {
-      autoSave: true
-    }));
+    var sharedsessionMD = sharedsession(we.session, {
+      autoSave: false
+    });
+
+    we.io.use(function (socket, next){
+      sharedsessionMD.bind(this)(socket, function (err){
+        if (err) we.log.error(err, socket);
+        next();
+      });
+    });
 
     we.events.emit('we:after:load:socket.io', { we: we, server: server } );
 
