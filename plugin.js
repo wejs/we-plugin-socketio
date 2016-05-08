@@ -98,7 +98,9 @@ module.exports = function loadPlugin(projectPath, Plugin) {
 
     // socket.io authToken middleware
     we.io.use(function (socket, next) {
-      if (!socket.handshake.query.authToken) return next();
+      if (!socket.handshake.query.authToken || socket.handshake.query.authToken == 'undefined') {
+        return next();
+      }
       // token strategy
       plugin.tokenStrategy.bind({we: we})(socket.handshake.query.authToken, function (err, user) {
         if (err) return next(err);
