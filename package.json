@@ -1,22 +1,23 @@
 {
   "name": "we-plugin-socketio",
   "description": "We.js we-plugin-socketio plugin",
-  "version": "0.3.6",
+  "version": "1.0.0",
   "main": "plugin.js",
   "scripts": {},
   "dependencies": {
-    "socket.io": "1.3.5"
-  },
-  "author": "Alberto Souza <alberto.souza.99@gmail.com>",
-  "publishConfig": {
-    "registry": "http://registry.npmjs.org"
+    "socket.io": "1.4.8"
   },
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:wejs/we-plugin-socketio.git"
-  },
+  "repository": "wejs/we-plugin-socketio",
   "devDependencies": {
     "socket.io-redis": "^1.0.0"
+  },
+  "author": "Alberto Souza <contato@albertosouza.net>",
+  "keywords": [
+    "authentication",
+    "wejs-plugin"
+  ],
+  "wejs": {
+    "dependencies": {}
   }
 }

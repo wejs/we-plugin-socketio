@@ -2,8 +2,6 @@
  * We.js socket.io plugin
  *
  * Add socket.io with suport to sesstion and token authentications
- *
- * see http://wejs.org/docs/we/extend.plugin
  */
 
 var socketIo = require('socket.io');

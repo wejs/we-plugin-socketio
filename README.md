@@ -1,15 +1,21 @@
 # We.js socket.io plugin
 
-> Add the we.io object and start one socket.io server in we.js express server
+Add the we.io object and start one socket.io server in we.js express server
 
-## Requirements
+## Installation
 
-- we-core
+```sh
+we i we-plugin-socketio
+```
 
 ## Links
 
 > * We.js site: http://wejs.org
 
-#Copyright and license
+## NPM Info:
 
-Alberto Souza <alberto.souza.99@gmail> and contributors , under [the MIT license](LICENSE).
+[![NPM](https://nodei.co/npm/we-plugin-auth.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/we-plugin-auth/)
+
+## License
+
+Under [the MIT license](https://github.com/wejs/we/blob/master/LICENSE.md).
